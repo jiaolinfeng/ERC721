@@ -118,22 +118,22 @@ contract TokenERC721Enumerable is TokenERC721, ERC721Enumerable {
     /// @param _extraTokens The number of extra tokens to mint.
     function issueTokens(uint256 _extraTokens) public{
         //Original
-        require(msg.sender == creator);
+        //require(msg.sender == creator);
         balances[msg.sender] = balances[msg.sender].add(_extraTokens);
 
         //Enumerable Additions
         uint thisId;
         for(uint i = 0; i < _extraTokens; i++){
             thisId = maxId.add(i).add(1);// + i + 1;
-            tokenTokenIndexes[thisId] = ownerTokenIndexes[creator].length;
-            ownerTokenIndexes[creator].push(thisId);
+            tokenTokenIndexes[thisId] = ownerTokenIndexes[msg.sender].length;
+            ownerTokenIndexes[msg.sender].push(thisId);
 
             indexTokens[thisId] = tokenIndexes.length;
             tokenIndexes.push(thisId);
 
 
             //Move event into this loop to save gas
-            Transfer(0x0, creator, thisId);
+            Transfer(0x0, msg.sender, thisId);
         }
 
         //Original
