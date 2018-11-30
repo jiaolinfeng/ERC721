@@ -1,4 +1,4 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.4.10;
 
 import "./TokenERC721.sol";
 import "./standard/ERC721Enumerable.sol";
@@ -15,7 +15,7 @@ contract TokenERC721Enumerable is TokenERC721, ERC721Enumerable {
 
     /// @notice Contract constructor
     /// @param _initialSupply The number of tokens to mint initially (see TokenERC721)
-    constructor(uint _initialSupply) public TokenERC721(_initialSupply){
+    function TokenERC721Enumerable(uint _initialSupply) public TokenERC721(_initialSupply){
         for(uint i = 0; i < _initialSupply; i++){
             tokenTokenIndexes[i+1] = i;
             ownerTokenIndexes[creator].push(i+1);
@@ -25,9 +25,9 @@ contract TokenERC721Enumerable is TokenERC721, ERC721Enumerable {
 
         //Add to ERC165 Interface Check
         supportedInterfaces[
-            this.totalSupply.selector ^
-            this.tokenByIndex.selector ^
-            this.tokenOfOwnerByIndex.selector
+            bytes4(keccak256("totalSupply()")) ^
+            bytes4(keccak256("tokenByIndex(uint256)")) ^
+            bytes4(keccak256("tokenOfOwnerByIndex(address,uint256)"))
         ] = true;
     }
 
@@ -35,7 +35,7 @@ contract TokenERC721Enumerable is TokenERC721, ERC721Enumerable {
     /// @notice Count NFTs tracked by this contract
     /// @return A count of valid NFTs tracked by this contract, where each one of
     ///  them has an assigned and queryable owner not equal to the zero address
-    function totalSupply() external view returns (uint256){
+    function totalSupply() external constant returns (uint256){
         return tokenIndexes.length;
     }
 
@@ -44,7 +44,7 @@ contract TokenERC721Enumerable is TokenERC721, ERC721Enumerable {
     /// @param _index A counter less than `totalSupply()`
     /// @return The token identifier for the `_index`th NFT,
     ///  (sort order not specified)
-    function tokenByIndex(uint256 _index) external view returns(uint256){
+    function tokenByIndex(uint256 _index) external constant returns(uint256){
         require(_index < tokenIndexes.length);
         return tokenIndexes[_index];
     }
@@ -56,7 +56,7 @@ contract TokenERC721Enumerable is TokenERC721, ERC721Enumerable {
     /// @param _index A counter less than `balanceOf(_owner)`
     /// @return The token identifier for the `_index`th NFT assigned to `_owner`,
     ///   (sort order not specified)
-    function tokenOfOwnerByIndex(address _owner, uint256 _index) external view returns (uint256){
+    function tokenOfOwnerByIndex(address _owner, uint256 _index) external constant returns (uint256){
         require(_index < balances[_owner]);
         return ownerTokenIndexes[_owner][_index];
     }
@@ -87,7 +87,7 @@ contract TokenERC721Enumerable is TokenERC721, ERC721Enumerable {
         require(owner == _from);
         require(_to != 0x0);
 
-        emit Transfer(_from, _to, _tokenId);
+        Transfer(_from, _to, _tokenId);
 
         owners[_tokenId] = _to;
         balances[_from]--;
@@ -132,8 +132,8 @@ contract TokenERC721Enumerable is TokenERC721, ERC721Enumerable {
             tokenIndexes.push(thisId);
 
 
-            //Move event emit into this loop to save gas
-            emit Transfer(0x0, creator, thisId);
+            //Move event into this loop to save gas
+            Transfer(0x0, creator, thisId);
         }
 
         //Original
@@ -171,7 +171,7 @@ contract TokenERC721Enumerable is TokenERC721, ERC721Enumerable {
         tokenIndexes.length--;
         delete indexTokens[_tokenId];
 
-        //Have to emit an event when a token is burnt
-        emit Transfer(owner, 0x0, _tokenId);
+        //Have to an event when a token is burnt
+        Transfer(owner, 0x0, _tokenId);
     }
 }

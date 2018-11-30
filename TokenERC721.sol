@@ -1,4 +1,4 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.4.10;
 
 import "./CheckERC165.sol";
 import "./standard/ERC721.sol";
@@ -24,24 +24,24 @@ contract TokenERC721 is ERC721, CheckERC165{
 
     /// @notice Contract constructor
     /// @param _initialSupply The number of tokens to mint initially
-    constructor(uint _initialSupply) public CheckERC165(){
+    function TokenERC721(uint _initialSupply) public CheckERC165(){
         creator = msg.sender;
         balances[msg.sender] = _initialSupply;
         maxId = _initialSupply;
 
         //Add to ERC165 Interface Check
         supportedInterfaces[
-            this.balanceOf.selector ^
-            this.ownerOf.selector ^
+            bytes4(keccak256("balanceOf(address)")) ^
+            bytes4(keccak256("ownerOf(uint256)")) ^
             //this.safeTransferFrom.selector ^
             //Have to manually do the two transferFroms because overloading confuse selector
             bytes4(keccak256("safeTransferFrom(address,address,uint256)"))^
             bytes4(keccak256("safeTransferFrom(address,address,uint256,bytes)"))^
-            this.transferFrom.selector ^
-            this.approve.selector ^
-            this.setApprovalForAll.selector ^
-            this.getApproved.selector ^
-            this.isApprovedForAll.selector
+            bytes4(keccak256("transferFrom(address,address,uint256)")) ^
+            bytes4(keccak256("approve(address,uint256)")) ^
+            bytes4(keccak256("setApprovalForAll(address,bool)")) ^
+            bytes4(keccak256("getApproved(uint256)")) ^
+            bytes4(keccak256("isApprovedForAll(address,address)"))
         ] = true;
     }
 
@@ -49,7 +49,7 @@ contract TokenERC721 is ERC721, CheckERC165{
     /// @dev If adding the ability to burn tokens, this function will need to reflect that.
     /// @param _tokenId The tokenId to check
     /// @return (bool) True if valid, False if not valid.
-    function isValidToken(uint256 _tokenId) internal view returns(bool){
+    function isValidToken(uint256 _tokenId) internal constant returns(bool){
         return _tokenId != 0 && _tokenId <= maxId && !burned[_tokenId];
     }
 
@@ -59,7 +59,7 @@ contract TokenERC721 is ERC721, CheckERC165{
     ///  function throws for queries about the zero address.
     /// @param _owner An address for whom to query the balance
     /// @return The number of NFTs owned by `_owner`, possibly zero
-    function balanceOf(address _owner) external view returns (uint256){
+    function balanceOf(address _owner) external constant returns (uint256){
         return balances[_owner];
     }
 
@@ -68,7 +68,7 @@ contract TokenERC721 is ERC721, CheckERC165{
     /// @dev NFTs assigned to zero address are considered invalid, and queries
     ///  about them do throw.
     /// @return The address of the owner of the NFT
-    function ownerOf(uint256 _tokenId) public view returns(address){
+    function ownerOf(uint256 _tokenId) public constant returns(address){
         require(isValidToken(_tokenId));
         if(owners[_tokenId] != 0x0 ){
             return owners[_tokenId];
@@ -87,9 +87,9 @@ contract TokenERC721 is ERC721, CheckERC165{
         require(msg.sender == creator);
         balances[msg.sender] = balances[msg.sender].add(_extraTokens);
 
-        //We have to emit an event for each token that gets created
+        //We have to an event for each token that gets created
         for(uint i = maxId.add(1); i <= maxId.add(_extraTokens); i++){
-            emit Transfer(0x0, creator, i);
+            Transfer(0x0, creator, i);
         }
 
         maxId += _extraTokens; //<- SafeMath for this operation was done in for loop above
@@ -105,8 +105,8 @@ contract TokenERC721 is ERC721, CheckERC165{
         burned[_tokenId] = true;
         balances[owner]--;
 
-        //Have to emit an event when a token is burnt
-        emit Transfer(owner, 0x0, _tokenId);
+        //Have to an event when a token is burnt
+        Transfer(owner, 0x0, _tokenId);
     }
 
 
@@ -121,7 +121,7 @@ contract TokenERC721 is ERC721, CheckERC165{
         require( owner == msg.sender                    //Require Sender Owns Token
             || authorised[owner][msg.sender]                //  or is approved for all.
         );
-        emit Approval(owner, _approved, _tokenId);
+        Approval(owner, _approved, _tokenId);
         allowance[_tokenId] = _approved;
     }
 
@@ -129,7 +129,7 @@ contract TokenERC721 is ERC721, CheckERC165{
     /// @dev Throws if `_tokenId` is not a valid NFT
     /// @param _tokenId The NFT to find the approved address for
     /// @return The approved address for this NFT, or the zero address if there is none
-    function getApproved(uint256 _tokenId) external view returns (address) {
+    function getApproved(uint256 _tokenId) external constant returns (address) {
         require(isValidToken(_tokenId));
         return allowance[_tokenId];
     }
@@ -138,7 +138,7 @@ contract TokenERC721 is ERC721, CheckERC165{
     /// @param _owner The address that owns the NFTs
     /// @param _operator The address that acts on behalf of the owner
     /// @return True if `_operator` is an approved operator for `_owner`, false otherwise
-    function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
+    function isApprovedForAll(address _owner, address _operator) external constant returns (bool) {
         return authorised[_owner][_operator];
     }
 
@@ -151,7 +151,7 @@ contract TokenERC721 is ERC721, CheckERC165{
     /// @param _operator Address to add to the set of authorized operators.
     /// @param _approved True if the operators is approved, false to revoke approval
     function setApprovalForAll(address _operator, bool _approved) external {
-        emit ApprovalForAll(msg.sender,_operator, _approved);
+        ApprovalForAll(msg.sender,_operator, _approved);
         authorised[msg.sender][_operator] = _approved;
     }
 
@@ -180,7 +180,7 @@ contract TokenERC721 is ERC721, CheckERC165{
         require(_to != 0x0);
         //require(isValidToken(_tokenId)); <-- done by ownerOf
 
-        emit Transfer(_from, _to, _tokenId);
+        Transfer(_from, _to, _tokenId);
 
         owners[_tokenId] = _to;
         balances[_from]--;

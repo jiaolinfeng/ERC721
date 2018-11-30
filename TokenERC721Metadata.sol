@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.10;
 
 import "./TokenERC721.sol";
 import "./standard/ERC721Metadata.sol";
@@ -10,16 +10,16 @@ contract TokenERC721Metadata is TokenERC721, ERC721Metadata {
 
     /// @notice Contract constructor
     /// @param _initialSupply The number of tokens to mint initially (see TokenERC721)
-    constructor(uint _initialSupply, string _name, string _symbol, string _uriBase) public TokenERC721(_initialSupply){
+    function TokenERC721Metadata(uint _initialSupply, string _name, string _symbol, string _uriBase) public TokenERC721(_initialSupply){
         __name = _name;
         __symbol = _symbol;
         __uriBase = bytes(_uriBase);
 
         //Add to ERC165 Interface Check
         supportedInterfaces[
-            this.name.selector ^
-            this.symbol.selector ^
-            this.tokenURI.selector
+            bytes4(keccak256("name()")) ^
+            bytes4(keccak256("symbol()")) ^
+            bytes4(keccak256("tokenURI(uint256)"))
         ] = true;
     }
 
@@ -34,16 +34,17 @@ contract TokenERC721Metadata is TokenERC721, ERC721Metadata {
     ///  Metadata JSON Schema".
     /// @param _tokenId The tokenId of the token of which to retrieve the URI.
     /// @return (string) The URI of the token.
-    function tokenURI(uint256 _tokenId) public view returns (string){
+    function tokenURI(uint256 _tokenId) external constant returns (string) {
         //Note: changed visibility to public
         require(isValidToken(_tokenId));
 
         uint maxLength = 100;
+        uint256 tokenId = _tokenId;
         bytes memory reversed = new bytes(maxLength);
         uint i = 0;
-        while (_tokenId != 0) {
-            uint remainder = _tokenId % 10;
-            _tokenId /= 10;
+        while (tokenId != 0) {
+            uint remainder = tokenId % 10;
+            tokenId /= 10;
             reversed[i++] = byte(48 + remainder);
         }
         bytes memory s = new bytes(__uriBase.length + i);
@@ -58,13 +59,13 @@ contract TokenERC721Metadata is TokenERC721, ERC721Metadata {
     }
 
     /// @notice A descriptive name for a collection of NFTs in this contract
-    function name() external view returns (string _name){
+    function name() external constant returns (string _name){
         //_name = "Name must be hard coded";
         _name = __name;
     }
 
     /// @notice An abbreviated name for NFTs in this contract
-    function symbol() external view returns (string _symbol){
+    function symbol() external constant returns (string _symbol){
         //_symbol = "Symbol must be hard coded";
         _symbol = __symbol;
     }

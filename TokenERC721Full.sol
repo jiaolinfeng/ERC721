@@ -1,4 +1,4 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.4.10;
 
 import "./TokenERC721Enumerable.sol";
 import "./TokenERC721Metadata.sol";
@@ -7,7 +7,7 @@ import "./TokenERC721Metadata.sol";
 /// @author Andrew Parker
 /// @dev Extends TokenERC721Metadata, TokenERC721Enumerable
 contract TokenERC721Full is TokenERC721Metadata, TokenERC721Enumerable{
-    constructor(uint _initialSupply) public TokenERC721Metadata(_initialSupply) TokenERC721Enumerable(_initialSupply){
+    function TokenERC721Full(uint _initialSupply) public TokenERC721Metadata(_initialSupply, "MyToken", "mytoken", "https://www.google.com/") TokenERC721Enumerable(_initialSupply) {
         //Nothing extra required, just need to make sure you explicitly call the other two constructors above ^^
     }
 }

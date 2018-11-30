@@ -1,4 +1,4 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.4.10;
 //Mutability and Visibility of some functions has been altered.
 
 /// @title ERC-721 Non-Fungible Token Standard
@@ -27,14 +27,14 @@ interface ERC721 /* is ERC165 */ {
     ///  function throws for queries about the zero address.
     /// @param _owner An address for whom to query the balance
     /// @return The number of NFTs owned by `_owner`, possibly zero
-    function balanceOf(address _owner) external view returns (uint256);
+    function balanceOf(address _owner) external constant returns (uint256);
 
     /// @notice Find the owner of an NFT
     /// @param _tokenId The identifier for an NFT
     /// @dev NFTs assigned to zero address are considered invalid, and queries
     ///  about them do throw.
     /// @return The address of the owner of the NFT
-    function ownerOf(uint256 _tokenId) public view returns (address);
+    function ownerOf(uint256 _tokenId) public constant returns (address);
 
     /// @notice Transfers the ownership of an NFT from one address to another address
     /// @dev Throws unless `msg.sender` is the current owner, an authorized
@@ -100,11 +100,11 @@ interface ERC721 /* is ERC165 */ {
     /// @dev Throws if `_tokenId` is not a valid NFT
     /// @param _tokenId The NFT to find the approved address for
     /// @return The approved address for this NFT, or the zero address if there is none
-    function getApproved(uint256 _tokenId) external view returns (address);
+    function getApproved(uint256 _tokenId) external constant returns (address);
 
     /// @notice Query if an address is an authorized operator for another address
     /// @param _owner The address that owns the NFTs
     /// @param _operator The address that acts on behalf of the owner
     /// @return True if `_operator` is an approved operator for `_owner`, false otherwise
-    function isApprovedForAll(address _owner, address _operator) external view returns (bool);
+    function isApprovedForAll(address _owner, address _operator) external constant returns (bool);
 }
